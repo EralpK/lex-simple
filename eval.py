@@ -7,14 +7,14 @@ import pandas as pd
 
 from readability import Readability
 
-
+import random
 
 input_file_og = open("raw_data/supreme_org_test.txt","r").read().strip().split('\n')
 ref_file1_og = open("raw_data/supreme_test_labels1.txt","r").read().strip().split('\n')
 ref_file2_og = open("raw_data/supreme_test_labels2.txt","r").read().strip().split('\n')
 ref_file3_og = open("raw_data/supreme_test_labels3.txt","r").read().strip().split('\n')
 muss_test_og = open("files/muss_test_supreme.txt","r").read().strip().split('\n')
-acces_test_og = open("files/access_supreme_test.txt","r").read().strip().split('\n')[:200]
+acces_test_og = open("files/access_supreme_test.txt","r").read().strip().split('\n')
 recls_outputs_og = open("files/recls_supreme_test.txt","r").read().strip().split('\n')
 lsbert_outputs_og = open("files/lsbert_outputs_supreme_test.txt","r").read().strip().split('\n')
 lsbert_outputs_ourcwi_og = open("files/lsbert_outputs_ourcwi_supreme_test.txt","r").read().strip().split('\n')
@@ -22,7 +22,7 @@ tst_outputs_og = open("files/gector_supreme_test.txt","r").read().strip().split(
 uslt_noss_og = open("files/uslt_noss_test_supreme.txt","r").read().strip().split('\n') #36.228448
 uslt_ss_og = open("files/uslt_supreme_test.txt","r").read().strip().split('\n') #37.470484
 
-scores_array = np.zeros((3,8,5))
+scores_array = np.zeros((3,12,5))
 for i in range(5):
     low = i*10
     high = (i+1)*10
@@ -49,6 +49,9 @@ for i in range(5):
     tst_dc = Readability(' '.join(tst_outputs)).dale_chall().score
     uslt_noss_dc = Readability(' '.join(uslt_noss)).dale_chall().score
     uslt_dc = Readability(' '.join(uslt_ss)).dale_chall().score
+    ref1_dc = Readability(' '.join(ref_file1)).dale_chall().score
+    ref2_dc = Readability(' '.join(ref_file2)).dale_chall().score
+    ref3_dc = Readability(' '.join(ref_file3)).dale_chall().score
 
     muss_fkgl = corpus_fkgl(muss_test)
     access_fkgl = corpus_fkgl(acces_test)
@@ -58,6 +61,9 @@ for i in range(5):
     tst_fkgl = corpus_fkgl(tst_outputs)
     uslt_noss_fkgl = corpus_fkgl(uslt_noss)
     uslt_fkgl = corpus_fkgl(uslt_ss)
+    ref1_fkgl = corpus_fkgl(ref_file1)
+    ref2_fkgl = corpus_fkgl(ref_file2)
+    ref3_fkgl = corpus_fkgl(ref_file3)
 
 # muss_fkgl = Readability(' '.join(muss_test)).flesch_kincaid().score
 # access_fkgl = Readability(' '.join(acces_test)).flesch_kincaid().score
@@ -108,7 +114,50 @@ for i in range(5):
                 refs_sents=[ref_file1,
                             ref_file2,  
                             ref_file3])
-
+    
+    """
+    ref1_add_ref = random.choice([ref_file2, ref_file3])
+    ref2_add_ref = random.choice([ref_file1, ref_file3])
+    ref3_add_ref = random.choice([ref_file1, ref_file2])
+    
+    ref1_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file1,
+                refs_sents=[ref_file2,
+                            ref_file3,
+                            ref1_add_ref])
+    ref2_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file2,
+                refs_sents=[ref_file1,
+                            ref_file3,
+                            ref2_add_ref])
+    ref3_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file3,
+                refs_sents=[ref_file1,
+                            ref_file2,
+                            ref3_add_ref])
+    """
+    
+    #"""
+    ref1_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file1,
+                refs_sents=[ref_file2,
+                            ref_file3])
+    ref2_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file2,
+                refs_sents=[ref_file1,
+                            ref_file3])
+    ref3_sari = corpus_sari(orig_sents=input_file,
+                sys_sents=ref_file3,
+                refs_sents=[ref_file1,
+                            ref_file2])
+    #"""
+    
+    #gold_ref_avg_dc = np.mean([ref1_dc, ref2_dc, ref3_dc])
+    #gold_ref_avg_fkgl = np.mean([ref1_fkgl, ref2_fkgl, ref3_fkgl])
+    #gold_ref_avg_sari = np.mean([ref1_sari, ref2_sari, ref3_sari])
+    gold_ref_avg_dc = np.mean([ref1_dc, ref2_dc, ref3_dc])
+    gold_ref_avg_fkgl = np.mean([ref1_fkgl, ref2_fkgl, ref3_fkgl])
+    gold_ref_avg_sari = np.mean([ref1_sari, ref2_sari, ref3_sari])
 
     score_dict = {"access":[access_sari,access_fkgl,access_dc], 
                    "muss":[muss_sari,muss_fkgl,muss_dc], 
@@ -117,7 +166,11 @@ for i in range(5):
                    "lsbert_ourcwi":[lsbert_ourcwi_sari,lsbert_ourcwi_fkgl,lsbert_ourcwi_dc],
                    "tst":[tst_sari, tst_fkgl, tst_dc], 
                    "uslt no ss":[uslt_noss_sari,uslt_noss_fkgl,uslt_noss_dc], 
-                   "uslt":[uslt_sari,uslt_fkgl,uslt_dc]}
+                   "uslt":[uslt_sari,uslt_fkgl,uslt_dc],
+                   "ref1": [ref1_sari,ref1_fkgl,ref1_dc],
+                   "ref2": [ref2_sari,ref2_fkgl,ref2_dc],
+                   "ref3": [ref3_sari,ref3_fkgl,ref3_dc],
+                   "gold_ref_avg": [gold_ref_avg_sari, gold_ref_avg_fkgl, gold_ref_avg_dc]}
     c = 0
     for key in score_dict:
         for metric in range(3):
@@ -125,8 +178,8 @@ for i in range(5):
         c += 1
     
 final_score_dict = np.mean(scores_array,axis=2)
-df_means = pd.DataFrame(final_score_dict,index=['SARI', 'FKGL','DC'],columns=['access','muss','recls','lsbert','lsbert_ourcwi','tst','uslt no ss','uslt'])
+df_means = pd.DataFrame(final_score_dict,index=['SARI', 'FKGL','DC'],columns=['access','muss','recls','lsbert','lsbert_ourcwi','tst','uslt no ss','uslt','ref1','ref2','ref3','gold ref avg'])
 print(df_means)
 stds = np.std(scores_array,axis=2)
-df_stds = pd.DataFrame(stds,index=['SARI', 'FKGL','DC'],columns=['access','muss','recls','lsbert','lsbert_ourcwi','tst','uslt no ss','uslt'])
+df_stds = pd.DataFrame(stds,index=['SARI', 'FKGL','DC'],columns=['access','muss','recls','lsbert','lsbert_ourcwi','tst','uslt no ss','uslt','ref1','ref2','ref3','gold ref avg'])
 print(df_stds)
