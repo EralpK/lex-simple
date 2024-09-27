@@ -20,6 +20,14 @@ from readability import Readability
 import nltk
 #nltk.download('punkt')
 #nltk.download('averaged_perceptron_tagger')
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--gpu_device", default="cuda:0", choices=["cpu", "cuda:0", "cuda:1", "cuda:2", "cuda:3"])
+args = parser.parse_args()
+gpu_device = args.gpu_device
+print("gpu_device: ", gpu_device)
 
 glove = torchtext.vocab.GloVe(name="6B", # trained on Wikipedia 2014 corpus
                                                             dim=300)
@@ -32,7 +40,10 @@ nlp_ner = spacy.load("en_core_web_sm")
 import nltk
 nltk.download('punkt_tab')
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("cuda available: ", torch.cuda.is_available())
+device = torch.device(gpu_device if torch.cuda.is_available() else "cpu")
+print("device: ", device)
 
 legal_base_tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
 legal_base_model = BertForMaskedLM.from_pretrained("nlpaueb/legal-bert-base-uncased")
@@ -415,11 +426,11 @@ def substition_ranker(suggestion_dictionary,complex_words,weight_bert,weight_cos
                                               print("Zero LM loss found")
                                           score += lm_perp * weight_lm
 
-                                pos_match = check_pos(original_text=original_text,target_word=key,suggestion=sugg[0])
-                                if pos_match:
-                                        pass
-                                else:
-                                        score = 0
+                                #pos_match = check_pos(original_text=original_text,target_word=key,suggestion=sugg[0])
+                                #if pos_match:
+                                #        pass
+                                #else:
+                                #        score = 0
                                 
                         else:
                                 pass
@@ -673,8 +684,8 @@ trial_count = 3
 
 if __name__ == '__main__':
 
-        target_path = "../supreme_org_val.txt"
-        simple_path = "uslt_noss_supreme_val.txt"
+        target_path = "../raw_data/supreme_org_test.txt"
+        simple_path = "../files/uslt_noss_test_supreme.txt"
 
         bert_weight = 3.00
         lm_weight = 0.36
